@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>tabcms</title>
+    <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
+    <style>
+        #edit-wrapper {
+            display: flex;
+        }
+        #sidebar {
+            max-width: 200px;
+            width: 200px;
+            padding: 0 20px;
+        }
+        .sidebar-label {
+            margin-bottom: 5px;
+        }
+        .sidebar-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            margin-bottom: 10px;
+        }
+        .sidebar-list li {
+            display: block;
+        }
+        .sidebar-list a {
+            color: black;
+            border: 1px solid black;
+            display: block;
+            padding: 5px 10px;
+            text-decoration: none;
+            transition: .2s border;
+        }
+        .sidebar-list li:not(:last-child) a {
+            border-bottom: 0;
+        }
+        .sidebar-list a:hover {
+            border: 1px solid blue;
+        }
+        #sidebar button {
+            display: block;
+            width: 100%;
+            border: 1px solid black;
+            padding: 5px 10px;
+            transition: .2s border;
+        }
+        #sidebar button:hover {
+            border: 1px solid blue;
+        }
+        #sidebar button:not(:last-child) {
+            border-bottom: 0;
+        }
+        .main-form-item {
+            margin-right: 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .main-form-item label {
+            display: block;
+        }
+        #main {
+            max-width: 100%;
+        }
+        .hidden {
+            display: none;
+        }
+        .main-form-textarea {
+            display: block;
+        }
+        .main-form-textarea textarea,
+        .ck-editor__editable  {
+            min-width: 500px;
+            min-height: 300px;
+        }
+    </style>
+    <script>
+        class MyUploadAdapter {
+            constructor( loader ) {
+                this.loader = loader;
+            }
+            upload() {
+                return this.loader.file
+                    .then( file => new Promise( ( resolve, reject ) => {
+                        resolve( { default: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Queen_Elizabeth_II_in_March_2015.jpg" } );
+                    } ) );
+            }
+            abort() {
+                // @todo wat
+            }
+        }
+        function MyCustomUploadAdapterPlugin( editor ) {
+            editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
+                return new MyUploadAdapter( loader );
+            };
+        }
+        var globalState = {};
+        function show(element) {
+            element.classList.remove("hidden");
+        }
+        function hide(element) {
+            element.classList.add("hidden");
+        }
+        function renderSidebar() {
+            pageList = document.getElementById("page-list");
+            pageList.innerHTML = "";
+            globalState.pages.forEach(function (page, index) {
+                pageList.innerHTML += `<li><a href="#${page.title}" data-page="${index}">${page.title}</a></li>`;
+            });
+            templateList = document.getElementById("template-list");
+            templateList.innerHTML = "";
+            globalState.templates.forEach(function (template, index) {
+                templateList.innerHTML += `<li><a href="#${template.name}" data-template="${index}">${template.name}</a></li>`;
+            });
+        }
+        function openForm(type, id) {
+            if (type == "page") {
+                globalState.currentPage = id;
+                show(document.getElementById('page-form'));
+                hide(document.getElementById('template-form'));
+                var currentPage = globalState.pages[globalState.currentPage];
+                globalState.editor.setData(currentPage.body);
+                var title = document.getElementById("title");
+                title.value = currentPage.title;
+                document.getElementById("path").value = currentPage.path;
+                title.focus();
+            }
+            else {
+                globalState.currentTemplate = id;
+                hide(document.getElementById('page-form'));
+                show(document.getElementById('template-form'));
+                var currentTemplate = globalState.templates[globalState.currentTemplate];
+                var template = document.getElementById("template")
+                template.value = currentTemplate.content;
+                document.getElementById("name").value = currentTemplate.name;
+                template.focus();
+            }
+            renderSidebar();
+        }
+        function addPage(title, body, path) {
+            globalState.pages.push({
+                title: title,
+                body: body,
+                path: path,
+            });
+        }
+        function removePage(id) {
+            globalState.pages.splice(id, 1);
+        }
+        function updatePage(id, title, body, path) {
+            globalState.pages[id] = {
+                title: title,
+                body: body,
+                path: path,
+            };
+        }
+        function addTemplate(name, content) {
+            globalState.templates.push({
+                name: name,
+                content: content,
+            });
+        }
+        function removeTemplate(id) {
+            globalState.templates.splice(id, 1);
+        }
+        function updateTemplate(id, name, content) {
+            globalState.templates[id] = {
+                name: name,
+                content: content,
+            };
+        }
+        function initApp() {
+            globalState = {
+                "currentPage": null,
+                "currentTemplate": null,
+                "pages": [],
+                "files": [],
+                "templates": [],
+            };
+            return ClassicEditor
+                .create( document.querySelector( '#editor' ) , {
+                    extraPlugins: [ MyCustomUploadAdapterPlugin ],
+                    image: {
+                        resizeOptions: [
+                            {
+                                name: 'imageResize:original',
+                                label: 'Original',
+                                value: null
+                            },
+                            {
+                                name: 'imageResize:50',
+                                label: '50%',
+                                value: '50'
+                            },
+                            {
+                                name: 'imageResize:75',
+                                label: '75%',
+                                value: '75'
+                            }
+                        ],
+                        toolbar: [
+                            'imageResize',
+                            '|',
+                            'imageTextAlternative'
+                        ],
+                    }
+                })
+                .then( editor => {
+                    globalState.editor = editor;
+                } )
+                .catch( error => {
+                    console.error( error );
+                } );
+        }
+        // Credit https://gist.github.com/peduarte/7ee475dd0fae1940f857582ecbb9dc5f
+        function debounce(func) {
+            var wait = arguments.length <= 1 || arguments[1] === undefined ? 100 : arguments[1];
+
+            var timeout = void 0;
+            return function () {
+                var _this = this;
+
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                args[_key] = arguments[_key];
+                }
+
+                clearTimeout(timeout);
+                timeout = setTimeout(function () {
+                func.apply(_this, args);
+                }, wait);
+            };
+        };
+        function autoSave() {
+            var title = document.getElementById("title");
+            var path = document.getElementById("path");
+            updatePage(globalState.currentPage, title.value, globalState.editor.getData(), path.value);
+            var name = document.getElementById("name");
+            var content = document.getElementById("template");
+            updateTemplate(globalState.currentTemplate, name.value, content.value);
+            renderSidebar();
+        };
+        function initEvents() {
+            document.getElementById("add-page").onclick = function () {
+                addPage("Untitled", "", "untitled");
+                openForm("page", globalState.pages.length - 1);
+            };
+            document.getElementById("add-template").onclick = function () {
+                addTemplate("newTemplate", "");
+                openForm("template", globalState.templates.length - 1);
+            };
+            document.getElementById("page-list").onclick = function (event) {
+                if (event.target.dataset.page !== undefined) {
+                    openForm("page", event.target.dataset.page);
+                }
+            };
+            document.getElementById("template-list").onclick = function (event) {
+                if (event.target.dataset.template !== undefined) {
+                    openForm("template", event.target.dataset.template);
+                }
+            };
+            autoSaveDebounce = debounce(autoSave, 500);
+            document.getElementById("title").onchange = autoSaveDebounce;
+            document.getElementById("title").onkeyup = autoSaveDebounce;
+            document.getElementById("path").onchange = autoSaveDebounce;
+            document.getElementById("path").onkeyup = autoSaveDebounce;
+            document.getElementById("name").onkeyup = autoSaveDebounce;
+            document.getElementById("template").onkeyup = autoSaveDebounce;
+            globalState.editor.model.document.on('change:data', autoSaveDebounce);
+        }
+    </script>
+</head>
+<body>
+    <div id="edit-wrapper">
+        <div id="sidebar">
+            <div class="sidebar-list-label">Pages</div>
+            <ul id="page-list" class="sidebar-list"></ul>
+            <div class="sidebar-list-label">Templates</div>
+            <ul id="template-list" class="sidebar-list"></ul>
+            <button id="add-page">Add page</button>
+            <button id="add-template">Add template</button>
+            <button id="open-preview">Open preview</button>
+            <button id="download">Download site</button>
+        </div>
+        <div id="main">
+            <form id="page-form">
+                <div class="main-form-item">
+                    <label for="title">Title</label>
+                    <input id="title" name="title" type="text"></input>
+                </div>
+                <div class="main-form-item">
+                    <label for="path">Path</label>
+                    <input id="path" name="path" type="text"></input>
+                </div>
+                <textarea name="editor" id="editor"></textarea>
+            </form>
+            <form id="template-form" class="hidden">
+                <div class="main-form-item">
+                    <label for="name">Name</label>
+                    <input id="name" name="name" type="text"></input>
+                </div>
+                <div class="main-form-item main-form-textarea">
+                    <label for="template">Template</label>
+                    <textarea id="template" name="template"></textarea>
+                </div>
+            </form>
+            <form id="file-form" class="hidden">
+                <label for="file-text"></label>
+                <textarea id="file-text" name="file-text"></textarea>
+            </form>
+        </div>
+    </div>
+    <div id="preview-wrapper" class="hidden">
+        <div id="preview-header">
+            <button id="close-preview">Close preview</button>
+        </div>
+        <iframe id="preview"></iframe>
+    </div>
+    <script>
+        initApp().then(function () {
+            initEvents();
+            addTemplate("header", `<header>
+</header>`);
+            addTemplate("footer", `<footer>
+
+</footer>`);
+            addTemplate("main", `<main>
+                
+</main>`);
+            addTemplate("html", `<html>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <%= include("header"); %>
+        <%= include("main"); %>
+        <%= include("footer"); %>
+    </body>
+</html>`);
+            document.getElementById("add-page").click();
+        });
+    </script>
+</body>
+</html>
