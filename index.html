@@ -20,6 +20,9 @@
         #sidebar {
             max-width: 200px;
             min-width: 200px;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-right: 5px;
         }
         .sidebar-label {
             margin-bottom: 5px;
@@ -163,18 +166,18 @@
             pageList = document.getElementById("page-list");
             pageList.innerHTML = "";
             getPages().forEach(function (page, index) {
-                pageList.innerHTML += `<li><a href="#${page.title}" data-page="${index}">${page.title}</a></li>`;
+                pageList.innerHTML += `<li><a href="#main" data-page="${index}">${page.title}</a></li>`;
             });
             templateList = document.getElementById("template-list");
             templateList.innerHTML = "";
             getTemplates().forEach(function (template, index) {
-                templateList.innerHTML += `<li><a href="#${template.name}" data-template="${index}">${template.name}</a></li>`;
+                templateList.innerHTML += `<li><a href="#main" data-template="${index}">${template.name}</a></li>`;
             });
             fileList = document.getElementById("file-list");
             fileList.innerHTML = "";
             var files = getFiles();
             files.forEach(function (file, index) {
-                fileList.innerHTML += `<li><a href="#${file.name}" data-file="${index}">${file.name}</a></li>`;
+                fileList.innerHTML += `<li><a href="#main" data-file="${index}">${file.name}</a></li>`;
             });
             if (!files.length) {
                 fileList.innerHTML = "No files uploaded."
