@@ -68,7 +68,9 @@
             display: block;
         }
         #main {
-            max-width: 100%;
+            min-width: 500px;
+            max-width: 600px;
+            flex-grow: 1;
         }
         .hidden {
             display: none;
@@ -78,8 +80,10 @@
         }
         .main-form-textarea textarea,
         .ck-editor__editable  {
-            min-width: 500px;
             min-height: 300px;
+        }
+        .main-form-textarea textarea {
+            width: 100%;
         }
         #preview {
             width: 100%;
@@ -87,6 +91,7 @@
         }
         #preview-wrapper {
             min-width: 500px;
+            flex-grow: 1;
         }
     </style>
     <script>
@@ -323,9 +328,20 @@
                     openForm("template", 0);
                 }
             };
-            document.getElementById("open-preview").onclick = function (e) {
+            document.getElementById("open-preview").onclick = function () {
                 renderPreview();
             }
+            document.getElementById("expand-preview").onclick = function () {
+                var button = document.getElementById("expand-preview");
+                if (button.innerText === "Expand") {
+                    hide(document.getElementById("sidebar"));
+                    hide(document.getElementById("main"));
+                } else {
+                    show(document.getElementById("sidebar"));
+                    show(document.getElementById("main"));
+                }
+                button.innerText = button.innerText === "Expand" ? "Collapse" : "Expand";
+            };
             autoSaveDebounce = debounce(autoSave, 500);
             document.getElementById("title").onchange = autoSaveDebounce;
             document.getElementById("title").onkeyup = autoSaveDebounce;
@@ -382,7 +398,7 @@
             </form>
         </div>
         <div id="preview-wrapper">
-            <div>Preview</div>
+            <div>Preview <button id="expand-preview">Expand</button></div>
             <iframe id="preview"></iframe>
         </div>
     </div>
