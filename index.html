@@ -18,7 +18,7 @@
         }
         #sidebar {
             max-width: 200px;
-            width: 200px;
+            min-width: 200px;
         }
         .sidebar-label {
             margin-bottom: 5px;
@@ -68,7 +68,7 @@
             display: block;
         }
         #main {
-            min-width: 500px;
+            width: 600px;
             max-width: 600px;
             flex-grow: 1;
         }
@@ -122,9 +122,10 @@
             element.classList.add("hidden");
         }
         function ejsCallback(path, data) {
-                for (var i in globalState.templates) {
-                    if (globalState.templates[i].name === path) {
-                        var compile = ejs.compile(globalState.templates[i].content, {client: true});
+                var templates = getTemplates();
+                for (var i in templates) {
+                    if (templates[i].name === path) {
+                        var compile = ejs.compile(templates[i].content, {client: true});
                         return compile(data, null, ejsCallback)
                     }
                 }
@@ -132,9 +133,9 @@
         }
         function renderPreview() {
             var data = {
-                page: globalState.pages[globalState.currentPage],
+                page: getPage(globalState.currentPage),
             };
-            var compile = ejs.compile(globalState.templates[0].content, {client: true});
+            var compile = ejs.compile(getTemplate(0).content, {client: true});
             var result = compile(data, null, ejsCallback);
             document.getElementById("preview").contentWindow.document.write(result);
             document.getElementById("preview").contentWindow.document.close();
@@ -142,12 +143,12 @@
         function renderSidebar() {
             pageList = document.getElementById("page-list");
             pageList.innerHTML = "";
-            globalState.pages.forEach(function (page, index) {
+            getPages().forEach(function (page, index) {
                 pageList.innerHTML += `<li><a href="#${page.title}" data-page="${index}">${page.title}</a></li>`;
             });
             templateList = document.getElementById("template-list");
             templateList.innerHTML = "";
-            globalState.templates.forEach(function (template, index) {
+            getTemplates().forEach(function (template, index) {
                 templateList.innerHTML += `<li><a href="#${template.name}" data-template="${index}">${template.name}</a></li>`;
             });
         }
@@ -157,7 +158,7 @@
                 globalState.currentPage = id;
                 show(document.getElementById('page-form'));
                 hide(document.getElementById('template-form'));
-                var currentPage = globalState.pages[globalState.currentPage];
+                var currentPage = getPage(globalState.currentPage);
                 globalState.editor.setData(currentPage.body);
                 var title = document.getElementById("title");
                 title.value = currentPage.title;
@@ -168,13 +169,25 @@
                 globalState.currentTemplate = id;
                 hide(document.getElementById('page-form'));
                 show(document.getElementById('template-form'));
-                var currentTemplate = globalState.templates[globalState.currentTemplate];
+                var currentTemplate = getTemplate(globalState.currentTemplate);
                 var template = document.getElementById("template")
                 template.value = currentTemplate.content;
                 document.getElementById("name").value = currentTemplate.name;
                 template.focus();
             }
             renderSidebar();
+        }
+        function getPage(id) {
+            return globalState.pages[id];
+        }
+        function getTemplate(id) {
+            return globalState.templates[id];
+        }
+        function getTemplates() {
+            return globalState.templates;
+        }
+        function getPages() {
+            return globalState.pages;
         }
         function addPage(title, body, path) {
             globalState.pages.push({
@@ -288,11 +301,11 @@
         function initEvents() {
             document.getElementById("add-page").onclick = function () {
                 addPage("Untitled", "", "untitled");
-                openForm("page", globalState.pages.length - 1);
+                openForm("page", getPages().length - 1);
             };
             document.getElementById("add-template").onclick = function () {
                 addTemplate("newTemplate", "");
-                openForm("template", globalState.templates.length - 1);
+                openForm("template", getTemplates().length - 1);
             };
             document.getElementById("page-list").onclick = function (event) {
                 if (event.target.dataset.page !== undefined) {
@@ -306,8 +319,8 @@
             };
             document.getElementById("delete-page").onclick = function (e) {
                 e.preventDefault();
-                currentPage = globalState.pages[globalState.currentPage];
-                if (globalState.pages.length === 1) {
+                currentPage = getPage(globalState.currentPage);
+                if (getPages().length === 1) {
                     alert("You must have at least one page.");
                     return;
                 }
@@ -318,7 +331,7 @@
             };
             document.getElementById("delete-template").onclick = function (e) {
                 e.preventDefault();
-                currentTemplate = globalState.templates[globalState.currentTemplate];
+                currentTemplate = getTemplate(globalState.currentTemplate);
                 if (currentTemplate.name === "html") {
                     alert("You cannot delete the html template.");
                     return;
