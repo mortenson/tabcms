@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>tabcms</title>
     <script src="assets/ejs.js"></script>
+    <script src="assets/localForage.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
     <style>
         #edit-wrapper {
@@ -102,7 +103,8 @@
             upload() {
                 return this.loader.file
                     .then( file => new Promise( ( resolve, reject ) => {
-                        resolve( { default: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Queen_Elizabeth_II_in_March_2015.jpg" } );
+                        globalState.files.push(file);
+                        resolve( { default: window.URL.createObjectURL(file) + `#filename=${file.name}` } );
                     } ) );
             }
             abort() {
@@ -115,6 +117,7 @@
             };
         }
         var globalState = {};
+        var globalEditor;
         function show(element) {
             element.classList.remove("hidden");
         }
@@ -159,7 +162,7 @@
                 show(document.getElementById('page-form'));
                 hide(document.getElementById('template-form'));
                 var currentPage = getPage(globalState.currentPage);
-                globalState.editor.setData(currentPage.body);
+                globalEditor.setData(currentPage.body);
                 var title = document.getElementById("title");
                 title.value = currentPage.title;
                 document.getElementById("path").value = currentPage.path;
@@ -260,7 +263,7 @@
                     }
                 })
                 .then( editor => {
-                    globalState.editor = editor;
+                    globalEditor = editor;
                 } )
                 .catch( error => {
                     console.error( error );
@@ -288,7 +291,7 @@
             if (globalState.currentForm === "page") {
                 var title = document.getElementById("title");
                 var path = document.getElementById("path");
-                updatePage(globalState.currentPage, title.value, globalState.editor.getData(), path.value);
+                updatePage(globalState.currentPage, title.value, globalEditor.getData(), path.value);
             }
             else if (globalState.currentForm === "template") {
                 var name = document.getElementById("name");
@@ -297,6 +300,7 @@
             }
             renderSidebar();
             renderPreview();
+            localforage.setItem("globalState", globalState);
         };
         function initEvents() {
             document.getElementById("add-page").onclick = function () {
@@ -362,7 +366,7 @@
             document.getElementById("path").onkeyup = autoSaveDebounce;
             document.getElementById("name").onkeyup = autoSaveDebounce;
             document.getElementById("template").onkeyup = autoSaveDebounce;
-            globalState.editor.model.document.on('change:data', autoSaveDebounce);
+            globalEditor.model.document.on('change:data', autoSaveDebounce);
         }
     </script>
 </head>
@@ -418,7 +422,33 @@
     <script>
         initApp().then(function () {
             initEvents();
-            addTemplate("html", `<!DOCTYPE html>
+            storedState = localforage.getItem("globalState").then(function(value) {
+                if (value) {
+                    globalState = value;
+                    for (var i in globalState.pages) {
+                        for (var match of globalState.pages[i].body.matchAll(/"(blob[^"]+#filename=([^"]+))"/g)) {
+                            var oldUrl = match[1];
+                            var filename = match[2];
+                            var file;
+                            for (var i in globalState.files) {
+                                if (globalState.files[i].name === filename) {
+                                    file = globalState.files[i];
+                                    break;
+                                }
+                            }
+                            if (!file) {
+                                continue;
+                            }
+                            globalState.pages[i].body = globalState.pages[i].body.replace(oldUrl, window.URL.createObjectURL(file) + `#filename=${file.name}`);
+                        }
+                    }
+                    renderSidebar();
+                    renderPreview();
+                    openForm("page", 0);
+                    return;
+                }
+                // Otherwise set up some defaults.
+                addTemplate("html", `<!DOCTYPE html>
 <html dir="ltr" lang="en">
     <meta charset="utf-8" />
     <head>
@@ -430,16 +460,19 @@
         <%- include("footer", {page: page}); %>
     </body>
 </html>`);
-            addTemplate("header", `<header>
+                addTemplate("header", `<header>
 </header>`);
-            addTemplate("footer", `<footer>
+                addTemplate("footer", `<footer>
 
 </footer>`);
-            addTemplate("main", `<main>
+                addTemplate("main", `<main>
 <h1><%= page.title %></h1>
 <%- page.body %>
 </main>`);
-            document.getElementById("add-page").click();
+                document.getElementById("add-page").click();
+            }).catch(function(err) {
+                // @todo error
+            });
         });
     </script>
 </body>
