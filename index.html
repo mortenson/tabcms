@@ -32,6 +32,9 @@
         }
         .sidebar-list li {
             display: block;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
         }
         .sidebar-list a {
             color: black;
@@ -94,6 +97,19 @@
             min-width: 500px;
             flex-grow: 1;
         }
+        #file-preview img {
+            max-width: 100%;
+            height: auto;
+        }
+        #file-name,
+        #file-usage,
+        #file-preview {
+            margin-bottom: 10px;
+        }
+        #file-usage ul {
+            padding: 0;
+            margin: 10px 30px;
+        }
     </style>
     <script>
         class MyUploadAdapter {
@@ -154,12 +170,22 @@
             getTemplates().forEach(function (template, index) {
                 templateList.innerHTML += `<li><a href="#${template.name}" data-template="${index}">${template.name}</a></li>`;
             });
+            fileList = document.getElementById("file-list");
+            fileList.innerHTML = "";
+            var files = getFiles();
+            files.forEach(function (file, index) {
+                fileList.innerHTML += `<li><a href="#${file.name}" data-file="${index}">${file.name}</a></li>`;
+            });
+            if (!files.length) {
+                fileList.innerHTML = "No files uploaded."
+            }
         }
         function openForm(type, id) {
             globalState.currentForm = type;
             if (type === "page") {
                 globalState.currentPage = id;
                 show(document.getElementById('page-form'));
+                hide(document.getElementById('file-form'));
                 hide(document.getElementById('template-form'));
                 var currentPage = getPage(globalState.currentPage);
                 globalEditor.setData(currentPage.body);
@@ -171,6 +197,7 @@
             else if (type === "template") {
                 globalState.currentTemplate = id;
                 hide(document.getElementById('page-form'));
+                hide(document.getElementById('file-form'));
                 show(document.getElementById('template-form'));
                 var currentTemplate = getTemplate(globalState.currentTemplate);
                 var template = document.getElementById("template")
@@ -178,16 +205,35 @@
                 document.getElementById("name").value = currentTemplate.name;
                 template.focus();
             }
+            else if (type === "file") {
+                globalState.currentFile = id;
+                hide(document.getElementById('page-form'));
+                show(document.getElementById('file-form'));
+                hide(document.getElementById('template-form'));
+                var currentFile = getFile(globalState.currentFile);
+                var preview = document.getElementById("file-preview");
+                if (['image/gif', 'image/jpeg', 'image/png'].includes(currentFile.type)) {
+                    preview.innerHTML = `<img src="${window.URL.createObjectURL(currentFile)}"></img>`;
+                } else {
+                    preview.innerHTML = "";
+                }
+                document.getElementById("file-name").innerText = currentFile.name;
+                var usageHTML = "";
+                var pages = getPages();
+                for (var i in pages) {
+                    if (pages[i].body.match(currentFile.name)) {
+                        usageHTML += `<li>${pages[i].title}</li>`
+                    }
+                }
+                if (usageHTML.length) {
+                    usageHTML = `<div>File is used by the following pages:</div><ul>${usageHTML}</ul>`
+                }
+                document.getElementById("file-usage").innerHTML = usageHTML;
+            }
             renderSidebar();
         }
         function getPage(id) {
             return globalState.pages[id];
-        }
-        function getTemplate(id) {
-            return globalState.templates[id];
-        }
-        function getTemplates() {
-            return globalState.templates;
         }
         function getPages() {
             return globalState.pages;
@@ -209,6 +255,12 @@
                 path: path,
             };
         }
+        function getTemplate(id) {
+            return globalState.templates[id];
+        }
+        function getTemplates() {
+            return globalState.templates;
+        }
         function addTemplate(name, content) {
             globalState.templates.push({
                 name: name,
@@ -223,6 +275,18 @@
                 name: name,
                 content: content,
             };
+        }
+        function getFile(id) {
+            return globalState.files[id];
+        }
+        function getFiles() {
+            return globalState.files;
+        }
+        function addFile(file) {
+            globalState.files.push(file);
+        }
+        function removeFile(id) {
+            globalState.files.splice(id, 1);
         }
         function initApp() {
             globalState = {
@@ -287,6 +351,9 @@
                 }, wait);
             };
         };
+        function storeState() {
+            localforage.setItem("globalState", globalState);
+        }
         function autoSave() {
             if (globalState.currentForm === "page") {
                 var title = document.getElementById("title");
@@ -300,7 +367,7 @@
             }
             renderSidebar();
             renderPreview();
-            localforage.setItem("globalState", globalState);
+            storeState();
         };
         function initEvents() {
             document.getElementById("add-page").onclick = function () {
@@ -321,6 +388,11 @@
                     openForm("template", event.target.dataset.template);
                 }
             };
+            document.getElementById("file-list").onclick = function (event) {
+                if (event.target.dataset.file !== undefined) {
+                    openForm("file", event.target.dataset.file);
+                }
+            };
             document.getElementById("delete-page").onclick = function (e) {
                 e.preventDefault();
                 currentPage = getPage(globalState.currentPage);
@@ -331,6 +403,7 @@
                 if (confirm(`Are you sure you want to delete ${currentPage.title}?`)) {
                     removePage(globalState.currentPage);
                     openForm("page", 0);
+                    storeState();
                 }
             };
             document.getElementById("delete-template").onclick = function (e) {
@@ -343,11 +416,9 @@
                 if (confirm(`Are you sure you want to delete ${currentTemplate.name}?`)) {
                     removeTemplate(globalState.currentTemplate);
                     openForm("template", 0);
+                    storeState();
                 }
             };
-            document.getElementById("open-preview").onclick = function () {
-                renderPreview();
-            }
             document.getElementById("expand-preview").onclick = function () {
                 var button = document.getElementById("expand-preview");
                 if (button.innerText === "Expand") {
@@ -358,6 +429,15 @@
                     show(document.getElementById("main"));
                 }
                 button.innerText = button.innerText === "Expand" ? "Collapse" : "Expand";
+            };
+            document.getElementById("delete-file").onclick = function (e) {
+                e.preventDefault();
+                currentFile = getFile(globalState.currentFile);
+                if (confirm(`Are you sure you want to delete ${currentFile.name}?`)) {
+                    removeFile(globalState.currentFile);
+                    openForm("page", 0);
+                    storeState();
+                }
             };
             autoSaveDebounce = debounce(autoSave, 500);
             document.getElementById("title").onchange = autoSaveDebounce;
@@ -377,9 +457,10 @@
             <ul id="page-list" class="sidebar-list"></ul>
             <div class="sidebar-list-label">Templates</div>
             <ul id="template-list" class="sidebar-list"></ul>
+            <div class="sidebar-list-label">Files</div>
+            <ul id="file-list" class="sidebar-list"></ul>
             <button id="add-page">Add page</button>
             <button id="add-template">Add template</button>
-            <button id="open-preview">Open preview</button>
             <button id="download-site">Download site</button>
         </div>
         <div id="main">
@@ -410,8 +491,10 @@
                 <button id="delete-template">Delete template</button>
             </form>
             <form id="file-form" class="hidden">
-                <label for="file-text"></label>
-                <textarea id="file-text" name="file-text"></textarea>
+                <div id="file-preview"></div>
+                <div id="file-name"></div>
+                <div id="file-usage"></div>
+                <button id="delete-file">Delete file</button>
             </form>
         </div>
         <div id="preview-wrapper">
