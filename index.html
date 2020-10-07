@@ -3,15 +3,22 @@
 <head>
     <meta charset="utf-8">
     <title>tabcms</title>
+    <script src="assets/ejs.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
     <style>
         #edit-wrapper {
             display: flex;
+            height: calc(100vh - 40px);
+        }
+        #edit-wrapper > * {
+            margin-left: 20px;
+        }
+        #edit-wrapper > *:last-child {
+            margin-right: 20px;
         }
         #sidebar {
             max-width: 200px;
             width: 200px;
-            padding: 0 20px;
         }
         .sidebar-label {
             margin-bottom: 5px;
@@ -74,6 +81,13 @@
             min-width: 500px;
             min-height: 300px;
         }
+        #preview {
+            width: 100%;
+            height: 100%;
+        }
+        #preview-wrapper {
+            min-width: 500px;
+        }
     </style>
     <script>
         class MyUploadAdapter {
@@ -101,6 +115,24 @@
         }
         function hide(element) {
             element.classList.add("hidden");
+        }
+        function ejsCallback(path, data) {
+                for (var i in globalState.templates) {
+                    if (globalState.templates[i].name === path) {
+                        var compile = ejs.compile(globalState.templates[i].content, {client: true});
+                        return compile(data, null, ejsCallback)
+                    }
+                }
+                return `Template ${path} not found.`;
+        }
+        function renderPreview() {
+            var data = {
+                page: globalState.pages[globalState.currentPage],
+            };
+            var compile = ejs.compile(globalState.templates[0].content, {client: true});
+            var result = compile(data, null, ejsCallback);
+            document.getElementById("preview").contentWindow.document.write(result);
+            document.getElementById("preview").contentWindow.document.close();
         }
         function renderSidebar() {
             pageList = document.getElementById("page-list");
@@ -246,6 +278,7 @@
                 updateTemplate(globalState.currentTemplate, name.value, content.value);
             }
             renderSidebar();
+            renderPreview();
         };
         function initEvents() {
             document.getElementById("add-page").onclick = function () {
@@ -290,6 +323,9 @@
                     openForm("template", 0);
                 }
             };
+            document.getElementById("open-preview").onclick = function (e) {
+                renderPreview();
+            }
             autoSaveDebounce = debounce(autoSave, 500);
             document.getElementById("title").onchange = autoSaveDebounce;
             document.getElementById("title").onkeyup = autoSaveDebounce;
@@ -345,36 +381,35 @@
                 <textarea id="file-text" name="file-text"></textarea>
             </form>
         </div>
-    </div>
-    <div id="preview-wrapper" class="hidden">
-        <div id="preview-header">
-            <button id="close-preview">Close preview</button>
+        <div id="preview-wrapper">
+            <div>Preview</div>
+            <iframe id="preview"></iframe>
         </div>
-        <iframe id="preview"></iframe>
     </div>
     <script>
         initApp().then(function () {
             initEvents();
+            addTemplate("html", `<!DOCTYPE html>
+<html dir="ltr" lang="en">
+    <meta charset="utf-8" />
+    <head>
+        <title><%= page.title %></title>
+    </head>
+    <body>
+        <%- include("header", {page: page}); %>
+        <%- include("main", {page: page}); %>
+        <%- include("footer", {page: page}); %>
+    </body>
+</html>`);
             addTemplate("header", `<header>
 </header>`);
             addTemplate("footer", `<footer>
 
 </footer>`);
             addTemplate("main", `<main>
-                
+<h1><%= page.title %></h1>
+<%- page.body %>
 </main>`);
-            addTemplate("html", `<!DOCTYPE html>
-<html dir="ltr" lang="en">
-    <meta charset="utf-8" />
-    <head>
-        <title></title>
-    </head>
-    <body>
-        <%= include("header"); %>
-        <%= include("main"); %>
-        <%= include("footer"); %>
-    </body>
-</html>`);
             document.getElementById("add-page").click();
         });
     </script>
