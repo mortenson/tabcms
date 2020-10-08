@@ -1,0 +1,25 @@
+{
+  "name": "tabcms",
+  "version": "0.0.1",
+  "description": "A CMS that runs in your browser tab.",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "ejs": "^3.1.5",
+    "jszip": "^3.5.0",
+    "localforage": "^1.9.0"
+  },
+  "scripts": {
+    "build-assets": "cp node_modules/ejs/ejs.min.js assets/ && cp node_modules/jszip/dist/jszip.min.js assets/ && cp node_modules/localforage/dist/localforage.min.js assets/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mortenson/tabcms.git"
+  },
+  "author": "Sam Mortenson (samuel@mortenson.coffee)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mortenson/tabcms/issues"
+  },
+  "homepage": "https://github.com/mortenson/tabcms#readme"
+}

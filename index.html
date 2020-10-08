@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>tabcms</title>
-    <script src="assets/ejs.js"></script>
-    <script src="assets/localForage.js"></script>
+    <script src="assets/ejs.min.js"></script>
+    <script src="assets/localforage.min.js"></script>
     <script src="assets/jszip.min.js"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
+    <script src="assets/ckeditor.js"></script>
     <style>
         #edit-wrapper {
             display: flex;
@@ -337,9 +337,49 @@
                         toolbar: [
                             'imageResize',
                             '|',
-                            'imageTextAlternative'
+                            'imageTextAlternative',
+                            '|',
+                            'linkImage',
                         ],
-                    }
+                    },
+                    toolbar: {
+                        items: [
+                            'heading',
+                            '|',
+                            'bold',
+                            'italic',
+                            'underline',
+                            'link',
+                            'bulletedList',
+                            'numberedList',
+                            'alignment',
+                            '|',
+                            'imageInsert',
+                            'mediaEmbed',
+                            '|',
+                            'indent',
+                            'outdent',
+                            'blockQuote',
+                            'insertTable',
+                            '|',
+                            'strikethrough',
+                            'subscript',
+                            'superscript',
+                            '|',
+                            'code',
+                            'codeBlock',
+                            '|',
+                            'removeFormat',
+                        ],
+                    },
+                    language: 'en',
+                    table: {
+                        contentToolbar: [
+                            'tableColumn',
+                            'tableRow',
+                            'mergeTableCells'
+                        ]
+                    },
                 })
                 .then( editor => {
                     globalEditor = editor;
