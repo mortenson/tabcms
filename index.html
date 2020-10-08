@@ -114,6 +114,10 @@
             padding: 0;
             margin: 10px 30px;
         }
+        #file-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
     <script>
         class MyUploadAdapter {
@@ -169,10 +173,31 @@
             var compile = ejs.compile(getTemplate(0).content, {client: true});
             return compile(data, null, ejsCallback);
         }
-        function renderPreview() {
-            var result = renderPage(globalState.currentPage);
+        function renderPreview(id) {
+            var result = renderPage(id);
+            document.getElementById("preview").contentWindow.document.open();
             document.getElementById("preview").contentWindow.document.write(result);
             document.getElementById("preview").contentWindow.document.close();
+            document.getElementById("preview").contentWindow.document.body.onclick = function (e) {
+                var target = e.target;
+                if (typeof target.href !== "string") {
+                    return;
+                }
+                e.preventDefault();
+                var wasLocal = false;
+                var path = sanitizePath(target.getAttribute("href"));
+                var pages = getPages();
+                for (var i in pages) {
+                    if (sanitizePath(pages[i].path) === path) {
+                        renderPreview(i);
+                        wasLocal = true;
+                        break;
+                    }
+                }
+                if (!wasLocal) {
+                    alert("External navigation is disabled in the preview.");
+                }
+            };
         }
         function renderSidebar() {
             pageList = document.getElementById("page-list");
@@ -421,9 +446,15 @@
                 updateTemplate(globalState.currentTemplate, name.value, content.value);
             }
             renderSidebar();
-            renderPreview();
+            renderPreview(globalState.currentPage);
             storeState();
         };
+        function sanitizePath(path) {
+            path = path.replace(/^[\/]+|[\/]+$/g, '');
+            path = path.replace(/(\/)\/+/g, '$1');
+            path = path.replace(/\./g, '');
+            return path;
+        }
         function downloadSite() {
             var zip = new JSZip();
             var cms = zip.folder("tabcms");
@@ -437,9 +468,8 @@
             pages = getPages();
             for (i in pages) {
                 var html = replaceAssetUrls(renderPage(i));
-                var path = pages[i].path.replace(/^[\/]+|[\/]+$/g, '');
-                var path = path.replace(/(\/)\/+/g, '$1');
-                www.file(path + "/index.html", html)
+                var path = sanitizePath(pages[i].path);
+                www.file(path + "/index.html", html);
             }
             zip.generateAsync({type:"blob"})
                 .then(function(content) {
@@ -605,9 +635,9 @@
                             var oldUrl = match[1];
                             var filename = match[2];
                             var file;
-                            for (var i in globalState.files) {
-                                if (globalState.files[i].name === filename) {
-                                    file = globalState.files[i];
+                            for (var j in globalState.files) {
+                                if (globalState.files[j].name === filename) {
+                                    file = globalState.files[j];
                                     break;
                                 }
                             }
@@ -618,7 +648,7 @@
                         }
                     }
                     renderSidebar();
-                    renderPreview();
+                    renderPreview(globalState.currentPage);
                     openForm("page", 0);
                     return;
                 }
