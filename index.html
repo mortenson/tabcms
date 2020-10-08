@@ -5,6 +5,7 @@
     <title>tabcms</title>
     <script src="assets/ejs.js"></script>
     <script src="assets/localForage.js"></script>
+    <script src="assets/jszip.min.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
     <style>
         #edit-wrapper {
@@ -35,9 +36,6 @@
         }
         .sidebar-list li {
             display: block;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
         }
         .sidebar-list a {
             color: black;
@@ -46,6 +44,9 @@
             padding: 5px 10px;
             text-decoration: none;
             transition: .2s border;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
         }
         .sidebar-list li:not(:last-child) a {
             border-bottom: 0;
@@ -86,7 +87,7 @@
             display: block;
         }
         .main-form-textarea textarea,
-        .ck-editor__editable  {
+        .ck-editor__main > .ck-editor__editable  {
             min-height: 300px;
         }
         .main-form-textarea textarea {
@@ -153,12 +154,23 @@
                 }
                 return `Template ${path} not found.`;
         }
-        function renderPreview() {
+        function replaceAssetUrls(html) {
+            for (var match of html.matchAll(/"(blob[^"]+#filename=([^"]+))"/g)) {
+                var oldUrl = match[1];
+                var filename = match[2];
+                html = html.replace(oldUrl, "/assets/" + filename);
+            }
+            return html;
+        }
+        function renderPage(id) {
             var data = {
-                page: getPage(globalState.currentPage),
+                page: getPage(id),
             };
             var compile = ejs.compile(getTemplate(0).content, {client: true});
-            var result = compile(data, null, ejsCallback);
+            return compile(data, null, ejsCallback);
+        }
+        function renderPreview() {
+            var result = renderPage(globalState.currentPage);
             document.getElementById("preview").contentWindow.document.write(result);
             document.getElementById("preview").contentWindow.document.close();
         }
@@ -372,6 +384,40 @@
             renderPreview();
             storeState();
         };
+        function downloadSite() {
+            var zip = new JSZip();
+            var cms = zip.folder("tabcms");
+            cms.file("state.json", JSON.stringify(globalState));
+            var www = zip.folder("www");
+            files = getFiles();
+            for (var i in files) {
+                cms.file("assets/" + files[i].name, files[i]);
+                www.file("assets/" + files[i].name, files[i]);
+            }
+            pages = getPages();
+            for (i in pages) {
+                var html = replaceAssetUrls(renderPage(i));
+                var path = pages[i].path.replace(/^[\/]+|[\/]+$/g, '');
+                var path = path.replace(/(\/)\/+/g, '$1');
+                www.file(path + "/index.html", html)
+            }
+            zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    // Credit to https://blog.logrocket.com/programmatic-file-downloads-in-the-browser-9a5186298d5c/
+                    var url = URL.createObjectURL(content);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = "tabcms.zip";
+                    var clickHandler = () => {
+                        setTimeout(() => {
+                            URL.revokeObjectURL(url);
+                            this.removeEventListener('click', clickHandler);
+                        }, 150);
+                    };
+                    a.addEventListener('click', clickHandler, false);
+                    a.click();
+                });
+        }
         function initEvents() {
             document.getElementById("add-page").onclick = function () {
                 addPage("Untitled", "", "untitled");
@@ -441,6 +487,9 @@
                     openForm("page", 0);
                     storeState();
                 }
+            };
+            document.getElementById("download-site").onclick = function (e) {
+                downloadSite();
             };
             autoSaveDebounce = debounce(autoSave, 500);
             document.getElementById("title").onchange = autoSaveDebounce;
