@@ -1,11 +1,10 @@
 (function () {
-
   // Globals. Don't judge me!
   var PLAINTEXT_REGEXP = /(css|js|CNAME|txt|html)$/i;
   var globalState = {};
   var objectURLs = {
-    "form": [],
-    "preview": [],
+    form: [],
+    preview: [],
   };
   var globalEditor;
 
@@ -34,8 +33,7 @@
           new Promise((resolve, reject) => {
             globalState.files.push(file);
             resolve({
-              default:
-                createObjectURL(file, "form") + `#filename=${file.name}`,
+              default: createObjectURL(file, "form") + `#filename=${file.name}`,
             });
           })
       );
@@ -166,9 +164,7 @@
 
   // Refreshes blob URLs that may have been revoked.
   function refreshBlobURLs(html) {
-    for (var match of html.matchAll(
-      /"(blob[^"]+#filename=([^"]+))"/g
-    )) {
+    for (var match of html.matchAll(/"(blob[^"]+#filename=([^"]+))"/g)) {
       var oldUrl = match[1];
       var filename = match[2];
       var file;
@@ -231,7 +227,7 @@
         if (currentFile.name.match(/(png|jpg|jpeg|gif|svg|webp)$/i)) {
           preview.innerHTML = `<img src="${createObjectURL(
             currentFile,
-            "form",
+            "form"
           )}"></img>`;
         } else {
           preview.innerHTML = "";
@@ -464,7 +460,7 @@
       case "template":
         var name = document.getElementById("name");
         var content = document.getElementById("template");
-        updateTemplate(globalState.currentTemplate, name.value, content.value);  
+        updateTemplate(globalState.currentTemplate, name.value, content.value);
         break;
       case "form":
         var name = document.getElementById("file-name").value;
@@ -482,7 +478,9 @@
           globalState.files[globalState.currentFile] = new File([blob], name);
         }
         if (
-          globalState.files[globalState.currentFile].name.match(PLAINTEXT_REGEXP)
+          globalState.files[globalState.currentFile].name.match(
+            PLAINTEXT_REGEXP
+          )
         ) {
           show(document.getElementById("file-contents-wrapper"));
         } else {
@@ -788,7 +786,9 @@
       })
       .catch(function (err) {
         console.error(err);
-        alert("Unable to read the stored state. You may want to backup/delete your IndexedDB for this site.");
+        alert(
+          "Unable to read the stored state. You may want to backup/delete your IndexedDB for this site."
+        );
       });
   });
 })();
