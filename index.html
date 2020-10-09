@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="main.css" />
   </head>
   <body>
+    <h1 id="tabcms-title">
+      tabcms - an in-browser CMS by
+      <a href="https://twitter.com/mortensonsam" target="_blank"
+        >@mortensonsam</a
+      >
+    </h1>
     <div id="edit-wrapper">
       <div id="sidebar">
         <div class="sidebar-list-label">Pages</div>
@@ -71,7 +77,9 @@
         </form>
       </div>
       <div id="preview-wrapper">
-        <div>Preview <button id="expand-preview">Expand</button></div>
+        <div id="preview-label">
+          Preview <button id="expand-preview">Expand</button>
+        </div>
         <iframe id="preview"></iframe>
       </div>
     </div>

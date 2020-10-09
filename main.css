@@ -1,3 +1,22 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#tabcms-title {
+  font-size: 20px;
+  padding: 10px 20px 20px 20px;
+  margin: 0;
+}
+
+#tabcms-title a {
+  color: blue;
+  text-decoration: none;
+}
+
+#tabcms-title a:hover {
+  text-decoration: underline;
+}
+
 #edit-wrapper {
   display: flex;
   height: calc(100vh - 40px);
@@ -19,7 +38,12 @@
   padding-right: 5px;
 }
 
-.sidebar-label {
+.sidebar-list-label,
+#main form label {
+  margin-bottom: 2px;
+}
+
+#preview-label {
   margin-bottom: 5px;
 }
 
@@ -35,6 +59,7 @@
 }
 
 .sidebar-list a {
+  font-size: 14px;
   color: black;
   border: 1px solid black;
   display: block;
@@ -86,6 +111,11 @@
   flex-grow: 1;
 }
 
+#main form input[type="text"] {
+  font-size: 14px;
+  padding: 5px 8px;
+}
+
 .hidden {
   display: none !important;
 }
@@ -118,9 +148,8 @@
   height: auto;
 }
 
-#file-name,
-#file-usage,
-#file-preview {
+#file-usage:not(:empty),
+#file-preview:not(:empty) {
   margin-bottom: 10px;
 }
 

@@ -1,5 +1,8 @@
+/*
+ * Code originally created by Samuel Mortenson (mortenson.coffee).
+ * This was written in ~20 hours, so please don't judge too hard!
+ */
 (function () {
-  // Globals. Don't judge me!
   var PLAINTEXT_REGEXP = /(css|js|CNAME|txt|html)$/i;
   var globalState = {};
   var objectURLs = {
@@ -462,7 +465,7 @@
         var content = document.getElementById("template");
         updateTemplate(globalState.currentTemplate, name.value, content.value);
         break;
-      case "form":
+      case "file":
         var name = document.getElementById("file-name").value;
         var currentFile = globalState.files[globalState.currentFile];
         var contents = document.getElementById("file-contents");
@@ -522,6 +525,7 @@
     <meta charset="utf-8" />
     <head>
         <title><%= page.title %></title>
+        <link rel="stylesheet" href="/assets/main.css" />
     </head>
     <body>
         <%- include("header", {page: page}); %>
@@ -548,9 +552,16 @@
       "main",
       `<main>
     <h1><%= page.title %></h1>
-    <%- page.body %>
+    <div class="page-body">
+      <%- page.body %>
+    </div>
 </main>`
     );
+    // prettier-ignore
+    globalState.files.push(new File([`.page-body img {
+  max-width: 500px;
+}
+`], "main.css"));
     document.getElementById("add-page").click();
   }
 
