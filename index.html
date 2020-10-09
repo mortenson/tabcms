@@ -184,19 +184,20 @@
                     return;
                 }
                 e.preventDefault();
-                var wasLocal = false;
-                var path = sanitizePath(target.getAttribute("href"));
-                var pages = getPages();
-                for (var i in pages) {
-                    if (sanitizePath(pages[i].path) === path) {
-                        renderPreview(i);
-                        wasLocal = true;
-                        break;
-                    }
-                }
-                if (!wasLocal) {
-                    alert("External navigation is disabled in the preview.");
-                }
+                alert("Navigation is disabled in the preview.");
+                // var wasLocal = false;
+                // var path = sanitizePath(target.getAttribute("href"));
+                // var pages = getPages();
+                // for (var i in pages) {
+                //     if (sanitizePath(pages[i].path) === path) {
+                //         renderPreview(i);
+                //         wasLocal = true;
+                //         break;
+                //     }
+                // }
+                // if (!wasLocal) {
+                //     alert("External navigation is disabled in the preview.");
+                // }
             };
         }
         function renderSidebar() {
@@ -252,7 +253,7 @@
                 hide(document.getElementById('template-form'));
                 var currentFile = getFile(globalState.currentFile);
                 var preview = document.getElementById("file-preview");
-                if (['image/gif', 'image/jpeg', 'image/png'].includes(currentFile.type)) {
+                if (currentFile.name.match(/(png|jpg|jpeg|gif|svg|webp)$/)) {
                     preview.innerHTML = `<img src="${window.URL.createObjectURL(currentFile)}"></img>`;
                 } else {
                     preview.innerHTML = "";
@@ -455,14 +456,99 @@
             path = path.replace(/\./g, '');
             return path;
         }
+        function resetSite() {
+            globalState = {
+                "currentPage": null,
+                "currentTemplate": null,
+                "currentFile": null,
+                "currentForm": null,
+                "pages": [],
+                "files": [],
+                "templates": [],
+            };
+            addTemplate("html", `<!DOCTYPE html>
+<html dir="ltr" lang="en">
+    <meta charset="utf-8" />
+    <head>
+        <title><%= page.title %></title>
+    </head>
+    <body>
+        <%- include("header", {page: page}); %>
+        <%- include("main", {page: page}); %>
+        <%- include("footer", {page: page}); %>
+    </body>
+</html>`);
+            addTemplate("header", `<header>
+</header>`);
+            addTemplate("footer", `<footer>
+
+</footer>`);
+            addTemplate("main", `<main>
+<h1><%= page.title %></h1>
+<%- page.body %>
+</main>`);
+            document.getElementById("add-page").click();
+        }
+        function uploadSite() {
+            var input = document.createElement("input");
+            input.type = "file";
+            input.accept = "application/zip";
+            input.onchange = function () {
+                var zip = new JSZip();
+                zip.loadAsync(this.files[0]).then(function (zip) {
+                    var json = zip.file("site.json").async("string").then(function (content) {
+                        try {
+                            var processed = JSON.parse(content);
+                        }
+                        catch (e) {
+                            alert("Unable to parse site.json");
+                            return;
+                        }
+                        if (!confirm("Importing this archive will erase your current site, are you sure you want to proceed?")) {
+                            return;
+                        }
+                        globalState = processed;
+                        globalState.files = [];
+                        var promises = [];
+                        for (var i in zip.files) {
+                            if (!i.match(/^www\/assets/)) {
+                                continue;
+                            }
+                            var file = zip.file(i);
+                            if (!file) {
+                                continue;
+                            }
+                            var promise = file.async("blob")
+                            promises.push(promise);
+                            promise.then((function() {
+                                var filename = i.replace(/.*\//, '');
+                                return function (content) {
+                                    globalState.files.push(new File([content], filename));
+                                }
+                            })());
+                        }
+                        Promise.all(promises).then((values) => {
+                            storeState();
+                            reloadObjectUrls();
+                            renderSidebar();
+                            openForm("page", globalState.currentPage);
+                            renderPreview(globalState.currentPage);
+                        });
+                    });
+                    if (json === null) {
+                        alert("No site.json found in archive.");
+                        return;
+                    }
+                });
+            };
+            input.click();
+        }
         function downloadSite() {
             var zip = new JSZip();
-            var cms = zip.folder("tabcms");
-            cms.file("state.json", JSON.stringify(globalState));
+            zip.file("site.json", JSON.stringify(globalState));
             var www = zip.folder("www");
             files = getFiles();
             for (var i in files) {
-                cms.file("assets/" + files[i].name, files[i]);
                 www.file("assets/" + files[i].name, files[i]);
             }
             pages = getPages();
@@ -561,6 +647,12 @@
             document.getElementById("download-site").onclick = function (e) {
                 downloadSite();
             };
+            document.getElementById("reset-site").onclick = function (e) {
+                resetSite();
+            };
+            document.getElementById("upload-site").onclick = function (e) {
+                uploadSite();
+            };
             autoSaveDebounce = debounce(autoSave, 500);
             document.getElementById("title").onchange = autoSaveDebounce;
             document.getElementById("title").onkeyup = autoSaveDebounce;
@@ -569,6 +661,25 @@
             document.getElementById("name").onkeyup = autoSaveDebounce;
             document.getElementById("template").onkeyup = autoSaveDebounce;
             globalEditor.model.document.on('change:data', autoSaveDebounce);
+        }
+        function reloadObjectUrls() {
+            for (var i in globalState.pages) {
+                for (var match of globalState.pages[i].body.matchAll(/"(blob[^"]+#filename=([^"]+))"/g)) {
+                    var oldUrl = match[1];
+                    var filename = match[2];
+                    var file;
+                    for (var j in globalState.files) {
+                        if (globalState.files[j].name === filename) {
+                            file = globalState.files[j];
+                            break;
+                        }
+                    }
+                    if (!file) {
+                        continue;
+                    }
+                    globalState.pages[i].body = globalState.pages[i].body.replace(oldUrl, window.URL.createObjectURL(file) + `#filename=${file.name}`);
+                }
+            }
         }
     </script>
 </head>
@@ -584,6 +695,8 @@
             <button id="add-page">Add page</button>
             <button id="add-template">Add template</button>
             <button id="download-site">Download site</button>
+            <button id="upload-site">Upload site</button>
+            <button id="reset-site">Reset site</button>
         </div>
         <div id="main">
             <form id="page-form">
@@ -630,51 +743,14 @@
             storedState = localforage.getItem("globalState").then(function(value) {
                 if (value) {
                     globalState = value;
-                    for (var i in globalState.pages) {
-                        for (var match of globalState.pages[i].body.matchAll(/"(blob[^"]+#filename=([^"]+))"/g)) {
-                            var oldUrl = match[1];
-                            var filename = match[2];
-                            var file;
-                            for (var j in globalState.files) {
-                                if (globalState.files[j].name === filename) {
-                                    file = globalState.files[j];
-                                    break;
-                                }
-                            }
-                            if (!file) {
-                                continue;
-                            }
-                            globalState.pages[i].body = globalState.pages[i].body.replace(oldUrl, window.URL.createObjectURL(file) + `#filename=${file.name}`);
-                        }
-                    }
+                    reloadObjectUrls();
                     renderSidebar();
                     renderPreview(globalState.currentPage);
                     openForm("page", 0);
                     return;
                 }
                 // Otherwise set up some defaults.
-                addTemplate("html", `<!DOCTYPE html>
-<html dir="ltr" lang="en">
-    <meta charset="utf-8" />
-    <head>
-        <title><%= page.title %></title>
-    </head>
-    <body>
-        <%- include("header", {page: page}); %>
-        <%- include("main", {page: page}); %>
-        <%- include("footer", {page: page}); %>
-    </body>
-</html>`);
-                addTemplate("header", `<header>
-</header>`);
-                addTemplate("footer", `<footer>
-
-</footer>`);
-                addTemplate("main", `<main>
-<h1><%= page.title %></h1>
-<%- page.body %>
-</main>`);
-                document.getElementById("add-page").click();
+                resetSite();
             }).catch(function(err) {
                 // @todo error
             });
