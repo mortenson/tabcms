@@ -546,6 +546,17 @@
 </main>`);
             document.getElementById("add-page").click();
         }
+        function uploadFile() {
+            var input = document.createElement("input");
+            input.type = "file";
+            input.onchange = function () {
+                globalState.files.push(this.files[0]);
+                storeState();
+                renderSidebar();
+                openForm("file", globalState.files.length - 1);
+            };
+            input.click();
+        }
         function uploadSite() {
             var input = document.createElement("input");
             input.type = "file";
@@ -716,6 +727,9 @@
             };
             document.getElementById("upload-site").onclick = function (e) {
                 uploadSite();
+            };
+            document.getElementById("upload-file").onclick = function (e) {
+                uploadFile();
             };
             autoSaveDebounce = debounce(autoSave, 500);
             document.getElementById("title").onchange = autoSaveDebounce;
