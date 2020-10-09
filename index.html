@@ -220,7 +220,19 @@
             if (!files.length) {
                 fileList.innerHTML = "No files uploaded."
             }
+            // @todo Seems cool but in reality quota is so big this doesn't matter.
+            // if (navigator.storage.estimate) {
+            //     navigator.storage.estimate().then(estimate => {
+            //         var usage = document.getElementById("usage");
+            //         usage.innerText = `Usage: ${humanFileSize(estimate.usage)} / ${humanFileSize(estimate.quota)}`;
+            //     });
+            // }
         }
+        // credit to https://stackoverflow.com/a/20732091
+        function humanFileSize(size) {
+            var i = Math.floor( Math.log(size) / Math.log(1024) );
+            return ( size / Math.pow(1024, i) ).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+        };
         function openForm(type, id) {
             globalState.currentForm = type;
             if (type === "page") {
