@@ -140,6 +140,7 @@
                 return new MyUploadAdapter( loader );
             };
         }
+        var PLAINTEXT_REGEXP = /(css|js|CNAME|txt|html)$/i;
         var globalState = {};
         var globalEditor;
         function show(element) {
@@ -176,6 +177,21 @@
         function renderPreview(id) {
             var result = renderPage(id);
             document.getElementById("preview").contentWindow.document.open();
+            for (var match of result.matchAll(/(?<=["'])\/?assets\/([^'"]+)/g)) {
+                var oldUrl = match[0];
+                var filename = match[1];
+                var file;
+                for (var i in globalState.files) {
+                    if (globalState.files[i].name === filename) {
+                        file = globalState.files[i];
+                        break;
+                    }
+                }
+                if (!file) {
+                    continue;
+                }
+                result = result.replace(oldUrl, window.URL.createObjectURL(file));
+            }
             document.getElementById("preview").contentWindow.document.write(result);
             document.getElementById("preview").contentWindow.document.close();
             document.getElementById("preview").contentWindow.document.body.onclick = function (e) {
@@ -265,12 +281,22 @@
                 hide(document.getElementById('template-form'));
                 var currentFile = getFile(globalState.currentFile);
                 var preview = document.getElementById("file-preview");
-                if (currentFile.name.match(/(png|jpg|jpeg|gif|svg|webp)$/)) {
+                var contents = document.getElementById("file-contents");
+                if (currentFile.name.match(/(png|jpg|jpeg|gif|svg|webp)$/i)) {
                     preview.innerHTML = `<img src="${window.URL.createObjectURL(currentFile)}"></img>`;
                 } else {
                     preview.innerHTML = "";
                 }
-                document.getElementById("file-name").innerText = currentFile.name;
+                if (currentFile.name.match(/(css|js|CNAME|txt|html)$/i)) {
+                    currentFile.text().then(function (text) {
+                        contents.value = text;
+                        show(contents);
+                    });
+                } else {
+                    contents.value = "";
+                    hide(contents);
+                }
+                document.getElementById("file-name").value = currentFile.name;
                 var usageHTML = "";
                 var pages = getPages();
                 for (var i in pages) {
@@ -458,6 +484,25 @@
                 var content = document.getElementById("template");
                 updateTemplate(globalState.currentTemplate, name.value, content.value);
             }
+            else if (globalState.currentForm === "file") {
+                var name = document.getElementById("file-name").value;
+                var currentFile = globalState.files[globalState.currentFile];
+                var contents = document.getElementById("file-contents");
+                if (currentFile.name.match(PLAINTEXT_REGEXP)) {
+                    var blob = new Blob([contents.value]);
+                    globalState.files[globalState.currentFile] = new File([blob], currentFile.name);
+                }
+                if (name !== currentFile.name) {
+                    var blob = currentFile.slice(0, currentFile.size, currentFile.type);
+                    globalState.files[globalState.currentFile] = new File([blob], name);
+                }
+                if (globalState.files[globalState.currentFile].name.match(PLAINTEXT_REGEXP)) {
+                    show(contents);
+                }
+                else {
+                    hide(contents);
+                }
+            }
             renderSidebar();
             renderPreview(globalState.currentPage);
             storeState();
@@ -595,6 +640,10 @@
                 addTemplate("newTemplate", "");
                 openForm("template", getTemplates().length - 1);
             };
+            document.getElementById("add-file").onclick = function() {
+                addFile(new File([""], "untitled.css"));
+                openForm("file", getFiles().length - 1);
+            };
             document.getElementById("page-list").onclick = function (event) {
                 if (event.target.dataset.page !== undefined) {
                     openForm("page", event.target.dataset.page);
@@ -660,6 +709,9 @@
                 downloadSite();
             };
             document.getElementById("reset-site").onclick = function (e) {
+                if (!confirm("Are you sure you want to delete your current site and start a new one?")) {
+                    return;
+                }
                 resetSite();
             };
             document.getElementById("upload-site").onclick = function (e) {
@@ -672,6 +724,8 @@
             document.getElementById("path").onkeyup = autoSaveDebounce;
             document.getElementById("name").onkeyup = autoSaveDebounce;
             document.getElementById("template").onkeyup = autoSaveDebounce;
+            document.getElementById("file-contents").onkeyup = autoSaveDebounce;
+            document.getElementById("file-name").onkeyup = autoSaveDebounce;
             globalEditor.model.document.on('change:data', autoSaveDebounce);
         }
         function reloadObjectUrls() {
@@ -706,6 +760,8 @@
             <ul id="file-list" class="sidebar-list"></ul>
             <button id="add-page">Add page</button>
             <button id="add-template">Add template</button>
+            <button id="add-file">Add empty file</button>
+            <button id="upload-file">Upload file</button>
             <button id="download-site">Download site</button>
             <button id="upload-site">Upload site</button>
             <button id="reset-site">Reset site</button>
@@ -738,8 +794,15 @@
                 <button id="delete-template">Delete template</button>
             </form>
             <form id="file-form" class="hidden">
+                <div class="main-form-item">
+                    <label for="file-name">Name</label>
+                    <input id="file-name" name="file-name" type="text"></input>
+                </div>
                 <div id="file-preview"></div>
-                <div id="file-name"></div>
+                <div class="main-form-item main-form-textarea">
+                    <label for="file-contents">File contents</label>
+                    <textarea id="file-contents" name="file-contents"></textarea>
+                </div>
                 <div id="file-usage"></div>
                 <button id="delete-file">Delete file</button>
             </form>
