@@ -7,10 +7,12 @@
   "devDependencies": {
     "ejs": "^3.1.5",
     "jszip": "^3.5.0",
-    "localforage": "^1.9.0"
+    "localforage": "^1.9.0",
+    "prettier": "^2.1.2"
   },
   "scripts": {
-    "build-assets": "cp node_modules/ejs/ejs.min.js assets/ && cp node_modules/jszip/dist/jszip.min.js assets/ && cp node_modules/localforage/dist/localforage.min.js assets/"
+    "build-assets": "cp node_modules/ejs/ejs.min.js assets/ && cp node_modules/jszip/dist/jszip.min.js assets/ && cp node_modules/localforage/dist/localforage.min.js assets/",
+    "prettier": "prettier --write index.html main.css main.js"
   },
   "repository": {
     "type": "git",
