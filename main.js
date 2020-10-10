@@ -600,8 +600,12 @@
       var zip = new JSZip();
       zip.loadAsync(this.files[0]).then(function (zip) {
         var json = zip
-          .file("site.json")
-          .async("string")
+          .file("site.json");
+        if (json === null) {
+          alert("No site.json found in archive.");
+          return;
+        }
+        json.async("string")
           .then(function (content) {
             try {
               var processed = JSON.parse(content);
@@ -646,10 +650,6 @@
               renderPreview(globalState.currentPage);
             });
           });
-        if (json === null) {
-          alert("No site.json found in archive.");
-          return;
-        }
       });
     };
     input.click();
