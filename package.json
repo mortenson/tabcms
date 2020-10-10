@@ -6,6 +6,7 @@
   "dependencies": {},
   "devDependencies": {
     "ejs": "^3.1.5",
+    "http-server": "^0.12.3",
     "jszip": "^3.5.0",
     "localforage": "^1.9.0",
     "prettier": "^2.1.2",
@@ -13,7 +14,8 @@
   },
   "scripts": {
     "build-assets": "cp node_modules/ejs/ejs.min.js assets/ && cp node_modules/jszip/dist/jszip.min.js assets/ && cp node_modules/localforage/dist/localforage.min.js assets/ && cp node_modules/shepherd.js/dist/js/shepherd.min.js assets/ && cp node_modules/shepherd.js/dist/css/shepherd.css assets/",
-    "prettier": "prettier --write index.html main.css main.js textareatab.js tour.js"
+    "prettier": "prettier --write index.html main.css main.js textareatab.js tour.js",
+    "start": "http-server"
   },
   "repository": {
     "type": "git",
