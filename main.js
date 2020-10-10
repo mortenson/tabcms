@@ -32,13 +32,14 @@
     }
     upload() {
       return this.loader.file.then(
-        (file) =>
-          new Promise((resolve, reject) => {
+        (function (file) {
+          return new Promise(function (resolve, reject) {
             globalState.files.push(file);
             resolve({
-              default: createObjectURL(file, "form") + `#filename=${file.name}`,
+              default: createObjectURL(file, "form") + "#filename=".concat(file.name)
             });
-          })
+          });
+        })
       );
     }
     abort() {
@@ -47,7 +48,7 @@
   }
 
   function MyCustomUploadAdapterPlugin(editor) {
-    editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
+    editor.plugins.get("FileRepository").createUploadAdapter = function (loader) {
       return new MyUploadAdapter(loader);
     };
   }
@@ -421,10 +422,10 @@
         contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
       },
     })
-      .then((editor) => {
+      .then(function (editor) {
         globalEditor = editor;
       })
-      .catch((error) => {
+      .catch(function (error) {
         alert("Error initializing CKEditor.");
         console.error(error);
       });
@@ -641,7 +642,7 @@
               })()
             );
           }
-          Promise.all(promises).then((values) => {
+          Promise.all(promises).then(function (values) {
             storeState();
             renderSidebar();
             openForm("page", globalState.currentPage);
@@ -674,8 +675,8 @@
       var a = document.createElement("a");
       a.href = url;
       a.download = "tabcms.zip";
-      var clickHandler = () => {
-        setTimeout(() => {
+      var clickHandler = function () {
+        setTimeout(function() {
           window.URL.revokeObjectURL(url);
           this.removeEventListener("click", clickHandler);
         }, 150);
