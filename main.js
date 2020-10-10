@@ -599,57 +599,55 @@
     input.onchange = function () {
       var zip = new JSZip();
       zip.loadAsync(this.files[0]).then(function (zip) {
-        var json = zip
-          .file("site.json");
+        var json = zip.file("site.json");
         if (json === null) {
           alert("No site.json found in archive.");
           return;
         }
-        json.async("string")
-          .then(function (content) {
-            try {
-              var processed = JSON.parse(content);
-            } catch (e) {
-              console.error(e);
-              alert("Unable to parse site.json");
-              return;
+        json.async("string").then(function (content) {
+          try {
+            var processed = JSON.parse(content);
+          } catch (e) {
+            console.error(e);
+            alert("Unable to parse site.json");
+            return;
+          }
+          if (
+            !confirm(
+              "Importing this archive will erase your current site, are you sure you want to proceed?"
+            )
+          ) {
+            return;
+          }
+          globalState = processed;
+          globalState.files = [];
+          var promises = [];
+          for (var i in zip.files) {
+            if (!i.match(/^www\/assets/)) {
+              continue;
             }
-            if (
-              !confirm(
-                "Importing this archive will erase your current site, are you sure you want to proceed?"
-              )
-            ) {
-              return;
+            var file = zip.file(i);
+            if (!file) {
+              continue;
             }
-            globalState = processed;
-            globalState.files = [];
-            var promises = [];
-            for (var i in zip.files) {
-              if (!i.match(/^www\/assets/)) {
-                continue;
-              }
-              var file = zip.file(i);
-              if (!file) {
-                continue;
-              }
-              var promise = file.async("blob");
-              promises.push(promise);
-              promise.then(
-                (function () {
-                  var filename = i.replace(/.*\//, "");
-                  return function (content) {
-                    globalState.files.push(new File([content], filename));
-                  };
-                })()
-              );
-            }
-            Promise.all(promises).then((values) => {
-              storeState();
-              renderSidebar();
-              openForm("page", globalState.currentPage);
-              renderPreview(globalState.currentPage);
-            });
+            var promise = file.async("blob");
+            promises.push(promise);
+            promise.then(
+              (function () {
+                var filename = i.replace(/.*\//, "");
+                return function (content) {
+                  globalState.files.push(new File([content], filename));
+                };
+              })()
+            );
+          }
+          Promise.all(promises).then((values) => {
+            storeState();
+            renderSidebar();
+            openForm("page", globalState.currentPage);
+            renderPreview(globalState.currentPage);
           });
+        });
       });
     };
     input.click();
