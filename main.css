@@ -197,3 +197,13 @@ body {
 #github-link:hover {
   text-decoration: underline;
 }
+
+.shepherd-arrow:before,
+.shepherd-element {
+  background: #f0f0f0;
+}
+
+.shepherd-button {
+  font-weight: bold;
+  color: white;
+}
