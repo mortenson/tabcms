@@ -206,7 +206,6 @@
         var title = document.getElementById("title");
         title.value = currentPage.title;
         document.getElementById("path").value = currentPage.path;
-        title.focus();
         break;
       case "template":
         globalState.currentTemplate = id;
@@ -219,7 +218,6 @@
         template.value = currentTemplate.content;
         name.value = currentTemplate.name;
         name.disabled = currentTemplate.name === "html";
-        template.focus();
         break;
       case "file":
         globalState.currentFile = id;
@@ -258,9 +256,17 @@
             usageList.append(li);
           }
         }
+        var templates = getTemplates();
+        for (var i in templates) {
+          if (templates[i].content.match(currentFile.name)) {
+            var li = document.createElement("li");
+            li.innerText = templates[i].name;
+            usageList.append(li);
+          }
+        }
         if (usageList.children.length) {
           usage.innerHTML =
-            "<div>This file is used by the following pages:</div>";
+            "<div>This file is used by the following pages/templates:</div>";
           usage.append(usageList);
         }
         break;

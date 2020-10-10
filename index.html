@@ -121,6 +121,14 @@
         <iframe id="preview"></iframe>
       </div>
     </div>
+    <script>
+      if (!localforage.supports(localforage.INDEXEDDB)) {
+        alert("Your browser does not support IndexedDB. Please try a newer browser if you can!");
+      }
+      if (!window.URL || !window.URL.createObjectURL) {
+        alert("Your browser does not support window.URL.createObjectURL. Please try a newer browser if you can!");
+      }
+    </script>
     <script src="main.js"></script>
     <script src="tour.js"></script>
   </body>
