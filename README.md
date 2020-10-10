@@ -12,11 +12,19 @@ anyone interested in IndexedDB and static site compilation in-browser.
 Assets are committed to the repository, so after git cloning you should be able
 to open index.html right in your browser. This is how I test locally!
 
+Alternatively, you can run `npm install && npm start` to start a
+local server.
+
+# Coding standards
+
+Before committing code, make sure to run `npm run prettier` to clean up coding
+standards.
+
 # Updating assets
 
-If you update dependencies, run `npm run build-assets`. This just copies stuff
-out of `dist` in `node_modules/*`, there are no compilation steps for this
-project.
+If you update dependencies, run `npm install && npm run build-assets`. This
+just copies stuff out of `dist` in `node_modules/*`, there are no compilation
+steps for this project.
 
 CKEditor is another beast. To update that, visit their website and use the
 interactive custom build generator. Select the following plugins:
