@@ -31,16 +31,15 @@
       this.loader = loader;
     }
     upload() {
-      return this.loader.file.then(
-        (function (file) {
-          return new Promise(function (resolve, reject) {
-            globalState.files.push(file);
-            resolve({
-              default: createObjectURL(file, "form") + "#filename=".concat(file.name)
-            });
+      return this.loader.file.then(function (file) {
+        return new Promise(function (resolve, reject) {
+          globalState.files.push(file);
+          resolve({
+            default:
+              createObjectURL(file, "form") + "#filename=".concat(file.name),
           });
-        })
-      );
+        });
+      });
     }
     abort() {
       alert("Image failed to upload");
@@ -48,7 +47,9 @@
   }
 
   function MyCustomUploadAdapterPlugin(editor) {
-    editor.plugins.get("FileRepository").createUploadAdapter = function (loader) {
+    editor.plugins.get("FileRepository").createUploadAdapter = function (
+      loader
+    ) {
       return new MyUploadAdapter(loader);
     };
   }
@@ -676,7 +677,7 @@
       a.href = url;
       a.download = "tabcms.zip";
       var clickHandler = function () {
-        setTimeout(function() {
+        setTimeout(function () {
           window.URL.revokeObjectURL(url);
           this.removeEventListener("click", clickHandler);
         }, 150);
