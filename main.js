@@ -346,6 +346,7 @@
   // Initializes the app - called at the start of page load.
   function initApp() {
     globalState = {
+      version: 1,
       currentPage: null,
       currentTemplate: null,
       currentFile: null,

@@ -19,7 +19,6 @@ body {
 
 #edit-wrapper {
   display: flex;
-  height: calc(100vh - 40px);
 }
 
 #edit-wrapper > * {
@@ -33,7 +32,6 @@ body {
 #sidebar {
   max-width: 200px;
   min-width: 200px;
-  max-height: 100vh;
   overflow-y: auto;
   padding-right: 5px;
 }
