@@ -66,7 +66,7 @@ body {
   display: block;
   padding: 5px 10px;
   text-decoration: none;
-  transition: 0.2s border, 0.2s color;
+  transition: 0.2s background;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -76,21 +76,21 @@ body {
   border-bottom: 0;
 }
 
-.sidebar-list a:hover {
-  border: 1px solid blue;
-  color: blue;
+.sidebar-list a:hover,
+.sidebar-list a:focus {
+  background: #e8e8e8;
 }
 
 .tcms-button {
   border: 1px solid black;
-  background: #ebeef4;
+  background: #f1f4fa;
   padding: 5px 10px;
-  transition: 0.2s border;
+  transition: 0.2s background;
 }
 
-.tcms-button:hover {
-  border: 1px solid blue;
-  color: blue;
+.tcms-button:hover,
+.tcms-button:focus {
+  background: #e8e8e8;
 }
 
 #sidebar .tcms-button {
