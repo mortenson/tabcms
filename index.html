@@ -7,6 +7,9 @@
     <script src="assets/localforage.min.js"></script>
     <script src="assets/jszip.min.js"></script>
     <script src="assets/ckeditor.js"></script>
+    <script src="assets/shepherd.min.js"></script>
+    <script src="textareatab.js"></script>
+    <link rel="stylesheet" href="assets/shepherd.css" />
     <link rel="stylesheet" href="main.css" />
   </head>
   <body>
@@ -24,13 +27,13 @@
         <ul id="template-list" class="sidebar-list"></ul>
         <div class="sidebar-list-label">Files</div>
         <ul id="file-list" class="sidebar-list"></ul>
-        <button id="add-page">Add page</button>
-        <button id="add-template">Add template</button>
-        <button id="add-file">Add empty file</button>
-        <button id="upload-file">Upload file</button>
-        <button id="download-site">Download site</button>
-        <button id="upload-site">Upload site</button>
-        <button id="reset-site">Reset site</button>
+        <button class="tcms-button" id="add-page">Add page</button>
+        <button class="tcms-button" id="add-template">Add template</button>
+        <button class="tcms-button" id="add-file">Add empty file</button>
+        <button class="tcms-button" id="upload-file">Upload file</button>
+        <button class="tcms-button" id="download-site">Download site</button>
+        <button class="tcms-button" id="upload-site">Upload site</button>
+        <button class="tcms-button" id="reset-site">Reset site</button>
       </div>
       <div id="main">
         <form id="page-form">
@@ -46,7 +49,7 @@
             <label for="editor">Body</label>
             <textarea name="editor" id="editor"></textarea>
           </div>
-          <button id="delete-page">Delete page</button>
+          <button class="tcms-button" id="delete-page">Delete page</button>
         </form>
         <form id="template-form" class="hidden">
           <div class="main-form-item">
@@ -56,8 +59,20 @@
           <div class="main-form-item main-form-textarea">
             <label for="template">Template</label>
             <textarea id="template" name="template"></textarea>
+            <p class="description">
+              To toggle the "tab to add spaces" behavior for this field, press
+              Control + m while the field is in focus.
+            </p>
+            <p class="description">
+              Templates use EJS, for documentation visit
+              <a href="https://ejs.co/#docs" target="_blank"
+                >https://ejs.co/#docs</a
+              >.
+            </p>
           </div>
-          <button id="delete-template">Delete template</button>
+          <button class="tcms-button" id="delete-template">
+            Delete template
+          </button>
         </form>
         <form id="file-form" class="hidden">
           <div class="main-form-item form-item-file-name">
@@ -71,18 +86,24 @@
           >
             <label for="file-contents">File contents</label>
             <textarea id="file-contents" name="file-contents"></textarea>
+            <p class="description">
+              To toggle the "tab to add spaces" behavior for this field, press
+              Control + m while the field is in focus.
+            </p>
           </div>
           <div id="file-usage"></div>
-          <button id="delete-file">Delete file</button>
+          <button class="tcms-button" id="delete-file">Delete file</button>
         </form>
       </div>
       <div id="preview-wrapper">
         <div id="preview-label">
-          Preview <button id="expand-preview">Expand</button>
+          Preview
+          <button class="tcms-button" id="expand-preview">Expand</button>
         </div>
         <iframe id="preview"></iframe>
       </div>
     </div>
     <script src="main.js"></script>
+    <script src="tour.js"></script>
   </body>
 </html>

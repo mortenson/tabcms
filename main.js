@@ -215,8 +215,10 @@
         show(document.getElementById("template-form"));
         var currentTemplate = getTemplate(globalState.currentTemplate);
         var template = document.getElementById("template");
+        var name = document.getElementById("name");
         template.value = currentTemplate.content;
-        document.getElementById("name").value = currentTemplate.name;
+        name.value = currentTemplate.name;
+        name.disabled = currentTemplate.name === "html";
         template.focus();
         break;
       case "file":
@@ -257,7 +259,8 @@
           }
         }
         if (usageList.children.length) {
-          usage.innerHTML = "<div>File is used by the following pages:</div>";
+          usage.innerHTML =
+            "<div>This file is used by the following pages:</div>";
           usage.append(usageList);
         }
         break;
@@ -353,6 +356,9 @@
     };
     return ClassicEditor.create(document.querySelector("#editor"), {
       extraPlugins: [MyCustomUploadAdapterPlugin],
+      mediaEmbed: {
+        previewsInData: true,
+      },
       image: {
         resizeOptions: [
           {
@@ -544,7 +550,6 @@
     addTemplate(
       "footer",
       `<footer>
-      
 </footer>`
     );
     // prettier-ignore
@@ -559,10 +564,11 @@
     );
     // prettier-ignore
     globalState.files.push(new File([`.page-body img {
-  max-width: 500px;
+    max-width: 500px;
 }
 `], "main.css"));
-    document.getElementById("add-page").click();
+    addPage("Home", "<p>Welcome to my <strong>home page</strong>!</p>", "/");
+    openForm("page", getPages().length - 1);
   }
 
   // Prompts the user to upload a new file.
@@ -778,6 +784,8 @@
     document.getElementById("file-contents").onkeyup = autoSaveDebounce;
     document.getElementById("file-name").onkeyup = autoSaveDebounce;
     globalEditor.model.document.on("change:data", autoSaveDebounce);
+    enableTextareaTabbing(document.getElementById("file-contents"));
+    enableTextareaTabbing(document.getElementById("template"));
   }
 
   initApp().then(function () {

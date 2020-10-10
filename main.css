@@ -44,6 +44,9 @@ body {
 }
 
 #preview-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
   margin-bottom: 5px;
 }
 
@@ -65,7 +68,7 @@ body {
   display: block;
   padding: 5px 10px;
   text-decoration: none;
-  transition: 0.2s border;
+  transition: 0.2s border, 0.2s color;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -77,22 +80,32 @@ body {
 
 .sidebar-list a:hover {
   border: 1px solid blue;
+  color: blue;
 }
 
-#sidebar button {
-  display: block;
-  width: 100%;
+.tcms-button {
   border: 1px solid black;
+  background: #ebeef4;
   padding: 5px 10px;
   transition: 0.2s border;
 }
 
-#sidebar button:hover {
+.tcms-button:hover {
   border: 1px solid blue;
+  color: blue;
 }
 
-#sidebar button:not(:last-child) {
+#sidebar .tcms-button {
+  display: block;
+  width: 100%;
+}
+
+#sidebar .tcms-button:not(:last-child) {
   border-bottom: 0;
+}
+
+#expand-preview {
+  margin-left: 5px;
 }
 
 .main-form-item {
@@ -112,6 +125,7 @@ body {
 }
 
 #main form input[type="text"] {
+  border: 1px solid black;
   font-size: 14px;
   padding: 5px 8px;
 }
@@ -165,5 +179,10 @@ body {
 
 .form-item-file-name,
 #file-name {
-  width: 100%;
+  width: calc(100% - 16px);
+}
+
+.description {
+  margin-top: 0;
+  font-size: 12px;
 }
