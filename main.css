@@ -116,6 +116,10 @@ body {
   display: block;
 }
 
+.main-form-details summary {
+  margin-bottom: 10px;
+}
+
 #main {
   width: 600px;
   max-width: 600px;

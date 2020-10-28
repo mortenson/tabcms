@@ -74,6 +74,23 @@
             <label for="editor">Body</label>
             <textarea name="editor" id="editor"></textarea>
           </div>
+          <details
+            class="main-form-details main-form-item main-form-textarea"
+            id="advanced"
+          >
+            <summary>Advanced</summary>
+            <label for="extra">Extra data</label>
+            <textarea name="extra" id="extra"></textarea>
+            <p class="description">
+              To toggle the "tab to add spaces" behavior for this field, press
+              Control + m while the field is in focus.
+            </p>
+            <p class="description">
+              Put any extra data you want passed to your templates here. If data
+              can be parsed as JSON, it will be available in templates as
+              "page.extraData".
+            </p>
+          </details>
           <button class="tcms-button" id="delete-page">Delete page</button>
         </form>
         <form id="template-form" class="hidden">

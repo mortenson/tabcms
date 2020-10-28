@@ -69,8 +69,12 @@
     var templates = getTemplates();
     for (var i in templates) {
       if (templates[i].name === path) {
-        var compile = ejs.compile(templates[i].content, { client: true });
-        return compile(data, null, ejsCallback);
+        try {
+          var compile = ejs.compile(templates[i].content, { client: true });
+          return compile(data, null, ejsCallback);
+        } catch (e) {
+          return `<pre style="white-space: pre-wrap;">Error when rendering template ${path}: ${e.message}</pre>`;
+        }
       }
     }
     return `Template ${path} not found.`;
@@ -88,8 +92,23 @@
 
   // Renders a page for use in the preview or in the final static output.
   function renderPage(id) {
+    var pages = getPages();
+    var templatePages = [];
+    for (var i in pages) {
+      // This prevents modifying the global state during rendering.
+      templatePages[i] = Object.assign({}, pages[i]);
+      try {
+        templatePages[i].extraData = JSON.parse(pages[i].extra);
+      } catch (e) {
+        templatePages[i].extraData = {};
+      }
+    }
     var data = {
-      page: getPage(id),
+      page: templatePages[id],
+      pageIndex: id,
+      site: {
+        pages: templatePages,
+      },
     };
     var compile = ejs.compile(getTemplate(0).content, { client: true });
     return compile(data, null, ejsCallback);
@@ -208,6 +227,8 @@
         var title = document.getElementById("title");
         title.value = currentPage.title;
         document.getElementById("path").value = currentPage.path;
+        document.getElementById("extra").value = currentPage.extra;
+        document.getElementById("advanced").removeAttribute("open");
         break;
       case "template":
         globalState.currentTemplate = id;
@@ -294,6 +315,7 @@
       title: title,
       body: body,
       path: path,
+      extra: "",
     });
   }
 
@@ -301,11 +323,12 @@
     globalState.pages.splice(id, 1);
   }
 
-  function updatePage(id, title, body, path) {
+  function updatePage(id, title, body, path, extra) {
     globalState.pages[id] = {
       title: title,
       body: body,
       path: path,
+      extra: extra,
     };
   }
 
@@ -354,7 +377,7 @@
   // Initializes the app - called at the start of page load.
   function initApp() {
     globalState = {
-      version: 1,
+      version: 2,
       currentPage: null,
       currentTemplate: null,
       currentFile: null,
@@ -468,11 +491,13 @@
       case "page":
         var title = document.getElementById("title");
         var path = document.getElementById("path");
+        var extra = document.getElementById("extra");
         updatePage(
           globalState.currentPage,
           title.value,
           globalEditor.getData(),
-          path.value
+          path.value,
+          extra.value
         );
         break;
       case "template":
@@ -543,9 +568,9 @@
         <link rel="stylesheet" href="/assets/main.css" />
     </head>
     <body>
-        <%- include("header", {page: page}); %>
-        <%- include("main", {page: page}); %>
-        <%- include("footer", {page: page}); %>
+        <%- include("header", {page: page, site: site, pageIndex: pageIndex}); %>
+        <%- include("main", {page: page, site: site, pageIndex: pageIndex}); %>
+        <%- include("footer", {page: page, site: site, pageIndex: pageIndex}); %>
     </body>
 </html>`
     );
@@ -593,6 +618,19 @@
     input.click();
   }
 
+  // Migrates older versions of the app state.
+  function migrateState(state) {
+    if (!state.hasOwnProperty("version") || state.version == 1) {
+      for (var i in state.pages) {
+        if (!state.pages[i].hasOwnProperty("extra")) {
+          state.pages[i].extra = "";
+        }
+      }
+      state.version = 2;
+    }
+    return state;
+  }
+
   // Accepts a site archive and sets global state and files appropriately.
   function uploadSite() {
     var input = document.createElement("input");
@@ -621,6 +659,7 @@
           ) {
             return;
           }
+          processed = migrateState(processed);
           globalState = processed;
           globalState.files = [];
           var promises = [];
@@ -788,11 +827,13 @@
     document.getElementById("path").onkeyup = autoSaveDebounce;
     document.getElementById("name").onkeyup = autoSaveDebounce;
     document.getElementById("template").onkeyup = autoSaveDebounce;
+    document.getElementById("extra").onkeyup = autoSaveDebounce;
     document.getElementById("file-contents").onkeyup = autoSaveDebounce;
     document.getElementById("file-name").onkeyup = autoSaveDebounce;
     globalEditor.model.document.on("change:data", autoSaveDebounce);
     enableTextareaTabbing(document.getElementById("file-contents"));
     enableTextareaTabbing(document.getElementById("template"));
+    enableTextareaTabbing(document.getElementById("extra"));
   }
 
   initApp().then(function () {
@@ -801,6 +842,7 @@
       .getItem("globalState")
       .then(function (value) {
         if (value) {
+          value = migrateState(value);
           globalState = value;
           renderSidebar();
           renderPreview(globalState.currentPage);
