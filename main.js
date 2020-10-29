@@ -10,6 +10,7 @@
     preview: [],
   };
   var globalEditor;
+  var lastTemplate;
 
   // Wraps object URL methods for memory management reasons.
   function createObjectURL(file, context) {
@@ -65,11 +66,15 @@
 
   // Safely compiles an EJS template.
   function ejsSafeCompile(template, data) {
+    if (template === lastTemplate) {
+      return "Infinite template include loop detected!";
+    }
+    lastTemplate = template;
     try {
       var compile = ejs.compile(template, { client: true });
       return compile(data, null, ejsCallback);
     } catch (e) {
-      return `<pre style="white-space: pre-wrap;">Error when rendering template ${path}: ${e.message}</pre>`;
+      return `<pre style="white-space: pre-wrap;">Error when rendering template: ${e.message}</pre>`;
     }
   }
 
