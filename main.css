@@ -201,6 +201,12 @@ body {
   font-size: 12px;
 }
 
+ul.description {
+  padding: 0;
+  margin: 0;
+  margin-left: 20px;
+}
+
 #tabcms-links {
   display: flex;
   position: absolute;
@@ -212,11 +218,14 @@ body {
   font-size: 14px;
   text-decoration: none;
   color: blue;
-  margin-right: 10px;
 }
 
 #tabcms-links a:hover {
   text-decoration: underline;
+}
+
+#tabcms-links a:not(:last-child) {
+  margin-right: 10px;
 }
 
 .shepherd-arrow:before,
