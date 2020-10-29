@@ -63,18 +63,23 @@
     element.classList.add("hidden");
   }
 
+  // Safely compiles an EJS template.
+  function ejsSafeCompile(template, data) {
+    try {
+      var compile = ejs.compile(template, { client: true });
+      return compile(data, null, ejsCallback);
+    } catch (e) {
+      return `<pre style="white-space: pre-wrap;">Error when rendering template ${path}: ${e.message}</pre>`;
+    }
+  }
+
   // Template rendering callback for EJS. Uses the user-configured templates as
   // if they were files.
   function ejsCallback(path, data) {
     var templates = getTemplates();
     for (var i in templates) {
       if (templates[i].name === path) {
-        try {
-          var compile = ejs.compile(templates[i].content, { client: true });
-          return compile(data, null, ejsCallback);
-        } catch (e) {
-          return `<pre style="white-space: pre-wrap;">Error when rendering template ${path}: ${e.message}</pre>`;
-        }
+        return ejsSafeCompile(templates[i].content, data);
       }
     }
     return `Template ${path} not found.`;
@@ -110,8 +115,7 @@
         pages: templatePages,
       },
     };
-    var compile = ejs.compile(getTemplate(0).content, { client: true });
-    return compile(data, null, ejsCallback);
+    return ejsSafeCompile(getTemplate(0).content, data);
   }
 
   // Renders a page and places it in the preview iframe.
