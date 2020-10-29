@@ -608,6 +608,8 @@
     // prettier-ignore
     globalState.files.push(new File([`.page-body img {
     max-width: 500px;
+    width: 100%;
+    height: auto;
 }
 `], "main.css"));
     addPage("Home", "<p>Welcome to my <strong>home page</strong>!</p>", "/");
