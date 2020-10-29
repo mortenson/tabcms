@@ -18,7 +18,7 @@
 
   tour.addStep({
     text:
-      "This is the page list. Pages are the content that powers you site, and allow you to edit content and upload images inline.",
+      "This is the page list. Pages are the content that powers your site, and allow you to edit content and upload images inline.",
     attachTo: {
       element: "#page-list",
       on: "right",
