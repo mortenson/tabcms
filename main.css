@@ -201,16 +201,21 @@ body {
   font-size: 12px;
 }
 
-#github-link {
-  font-size: 14px;
+#tabcms-links {
+  display: flex;
   position: absolute;
   top: 10px;
   right: 30px;
-  text-decoration: none;
-  color: blue;
 }
 
-#github-link:hover {
+#tabcms-links a {
+  font-size: 14px;
+  text-decoration: none;
+  color: blue;
+  margin-right: 10px;
+}
+
+#tabcms-links a:hover {
   text-decoration: underline;
 }
 
