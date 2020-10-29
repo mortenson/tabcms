@@ -1,5 +1,7 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
+  height: 100vh;
+  padding: 0;
 }
 
 #tabcms-title {
@@ -19,6 +21,7 @@ body {
 
 #edit-wrapper {
   display: flex;
+  height: 100%;
 }
 
 #edit-wrapper > * {
@@ -145,8 +148,16 @@ body {
   min-height: 300px;
 }
 
+.ck-editor__editable {
+  max-height: 600px;
+}
+
 .main-form-textarea textarea {
   width: 100%;
+}
+
+#extra {
+  min-height: 100px;
 }
 
 #preview {
