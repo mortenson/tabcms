@@ -39,14 +39,8 @@
       >
     </h1>
     <div id="tabcms-links">
-      <a
-        href="https://demo.tabcms.com"
-        target="_blank"
-        >View a demo site</a
-      >
-      <a
-        href="https://github.com/mortenson/tabcms"
-        target="_blank"
+      <a href="https://demo.tabcms.com" target="_blank">View a demo site</a>
+      <a href="https://github.com/mortenson/tabcms" target="_blank"
         >Scare me on Github</a
       >
     </div>
@@ -115,8 +109,19 @@
               Templates use EJS, for documentation visit
               <a href="https://ejs.co/#docs" target="_blank"
                 >https://ejs.co/#docs</a
-              >.
+              >. Variables passed to the "html" template are:
             </p>
+            <ul class="description">
+              <li>
+                page - An object containing the properties title, path, body,
+                extra, and extraData.
+              </li>
+              <li>
+                site - An object containing the property "pages", an array of
+                all pages.
+              </li>
+              <li>pageIndex - The current page's index in site.pages.</li>
+            </ul>
           </div>
           <button class="tcms-button" id="delete-template">
             Delete template
