@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "A CMS that runs in your browser tab.",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "ecstatic": "^4.1.4"
+  },
   "devDependencies": {
     "ejs": "^3.1.5",
     "http-server": "^0.12.3",
