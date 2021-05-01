@@ -41,20 +41,32 @@
     <div id="tabcms-links">
       <a href="https://demo.tabcms.com" target="_blank">View a demo site</a>
       <a href="https://github.com/mortenson/tabcms" target="_blank"
-        >Scare me on Github</a
+        >View code on Github</a
       >
     </div>
     <div id="edit-wrapper">
       <div id="sidebar">
-        <div class="sidebar-list-label">Pages</div>
+        <div class="sidebar-list-label">
+          Pages
+          <button class="tcms-add" id="add-page">
+            <span class="visually-hidden">Add page</span>
+          </button>
+        </div>
         <ul id="page-list" class="sidebar-list"></ul>
-        <div class="sidebar-list-label">Templates</div>
+        <div class="sidebar-list-label">
+          Templates
+          <button class="tcms-add" id="add-template">
+            <span class="visually-hidden">Add template</span>
+          </button>
+        </div>
         <ul id="template-list" class="sidebar-list"></ul>
-        <div class="sidebar-list-label">Files</div>
+        <div class="sidebar-list-label">
+          Files
+          <button class="tcms-add" id="add-file">
+            <span class="visually-hidden">Add empty file</span>
+          </button>
+        </div>
         <ul id="file-list" class="sidebar-list"></ul>
-        <button class="tcms-button" id="add-page">Add page</button>
-        <button class="tcms-button" id="add-template">Add template</button>
-        <button class="tcms-button" id="add-file">Add empty file</button>
         <button class="tcms-button" id="upload-file">Upload file</button>
         <button class="tcms-button" id="download-site">Download site</button>
         <button class="tcms-button" id="upload-site">Upload site</button>

@@ -3,16 +3,23 @@ body {
   height: calc(100vh - 16px);
   margin: 8px;
   padding: 0;
+  color: var(--font-color);
+  background: var(--bg-color);
+  --font-color: rgb(26, 26, 26);
+  --bg-color: white;
+  --link-color: #2424ce;
+  --bg-color-hover: #e8e8e8;
+  --border-color: #a5a5a5;
 }
 
 #tabcms-title {
-  font-size: 20px;
+  font-size: 18px;
   padding: 10px 20px 20px 20px;
   margin: 0;
 }
 
 #tabcms-title a {
-  color: blue;
+  color: var(--link-color);
   text-decoration: none;
 }
 
@@ -40,15 +47,22 @@ body {
   padding-right: 5px;
 }
 
-.sidebar-list-label,
 #main form label {
-  margin-bottom: 2px;
+  margin-bottom: 5px;
+}
+
+.sidebar-list-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--bg-color-hover);
+  padding-bottom: 5px;
 }
 
 #preview-label {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: start;
   margin-bottom: 5px;
 }
 
@@ -65,8 +79,7 @@ body {
 
 .sidebar-list a {
   font-size: 14px;
-  color: black;
-  border: 1px solid black;
+  color: var(--font-color);
   display: block;
   padding: 5px 10px;
   text-decoration: none;
@@ -76,25 +89,47 @@ body {
   white-space: nowrap;
 }
 
-.sidebar-list li:not(:last-child) a {
-  border-bottom: 0;
-}
-
 .sidebar-list a:hover,
 .sidebar-list a:focus {
-  background: #e8e8e8;
+  background: var(--bg-color-hover);
 }
 
 .tcms-button {
-  border: 1px solid black;
-  background: #f1f4fa;
-  padding: 5px 10px;
+  color: var(--font-color);
+  padding: 8px 15px;
   transition: 0.2s background;
+  background: none;
+  border: 1px solid var(--border-color);
+  margin-bottom: 5px;
 }
 
 .tcms-button:hover,
 .tcms-button:focus {
-  background: #e8e8e8;
+  background: var(--bg-color-hover);
+}
+
+.tcms-add {
+  font-size: 14px;
+  color: var(--font-color);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  width: 25px;
+  height: 20px;
+  background: transparent;
+  font-weight: bold;
+  transition: 0.2s background;
+  padding: 0;
+}
+
+.tcms-add::before {
+  content: "+";
+}
+
+.tcms-add:hover,
+.tcms-add:focus {
+  background: var(--bg-color-hover);
 }
 
 #sidebar .tcms-button {
@@ -102,12 +137,10 @@ body {
   width: 100%;
 }
 
-#sidebar .tcms-button:not(:last-child) {
-  border-bottom: 0;
-}
-
 #expand-preview {
   margin-left: 5px;
+  margin-bottom: 0;
+  padding: 5px 10px;
 }
 
 .main-form-item {
@@ -131,7 +164,7 @@ body {
 }
 
 #main form input[type="text"] {
-  border: 1px solid black;
+  border: 1px solid var(--border-color);
   font-size: 14px;
   padding: 5px 8px;
 }
@@ -155,6 +188,7 @@ body {
 
 .main-form-textarea textarea {
   width: 100%;
+  border: 1px solid var(--border-color);
 }
 
 #extra {
@@ -164,6 +198,7 @@ body {
 #preview {
   width: 100%;
   height: 100%;
+  border: 1px solid var(--border-color);
 }
 
 #preview-wrapper {
@@ -210,14 +245,14 @@ ul.description {
 #tabcms-links {
   display: flex;
   position: absolute;
-  top: 10px;
+  top: 20px;
   right: 30px;
 }
 
 #tabcms-links a {
   font-size: 14px;
   text-decoration: none;
-  color: blue;
+  color: var(--link-color);
 }
 
 #tabcms-links a:hover {
@@ -235,5 +270,15 @@ ul.description {
 
 .shepherd-button {
   font-weight: bold;
-  color: white;
+  color: var(--bg-color);
+}
+
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
