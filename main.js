@@ -718,7 +718,10 @@
     for (i in pages) {
       var html = replaceAssetUrls(renderPage(i));
       var path = sanitizePath(pages[i].path);
-      www.file(path + "/index.html", html);
+      if (path !== "") {
+        path += "/";
+      }
+      www.file(path + "index.html", html);
     }
     zip.generateAsync({ type: "blob" }).then(function (content) {
       // Credit to https://blog.logrocket.com/programmatic-file-downloads-in-the-browser-9a5186298d5c/
