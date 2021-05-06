@@ -386,7 +386,7 @@
   // Initializes the app - called at the start of page load.
   function initApp() {
     globalState = {
-      version: 2,
+      version: 3,
       currentPage: null,
       currentTemplate: null,
       currentFile: null,
@@ -675,7 +675,7 @@
           globalState.files = [];
           var promises = [];
           for (var i in zip.files) {
-            if (!i.match(/^www\/assets/)) {
+            if (!i.match(/^(www\/)?assets/)) {
               continue;
             }
             var file = zip.file(i);
@@ -708,11 +708,9 @@
   // Downloads the site, and its static HTML, as a ZIP.
   function downloadSite() {
     var zip = new JSZip();
-    zip.file("site.json", JSON.stringify(globalState));
-    var www = zip.folder("www");
     files = getFiles();
     for (var i in files) {
-      www.file("assets/" + files[i].name, files[i]);
+      zip.file("assets/" + files[i].name, files[i]);
     }
     pages = getPages();
     for (i in pages) {
@@ -721,8 +719,9 @@
       if (path !== "") {
         path += "/";
       }
-      www.file(path + "index.html", html);
+      zip.file(path + "index.html", html);
     }
+    zip.file("site.json", JSON.stringify(globalState));
     zip.generateAsync({ type: "blob" }).then(function (content) {
       // Credit to https://blog.logrocket.com/programmatic-file-downloads-in-the-browser-9a5186298d5c/
       var url = window.URL.createObjectURL(content);
